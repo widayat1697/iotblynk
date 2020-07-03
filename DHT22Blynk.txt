@@ -1,0 +1,48 @@
+#define BLYNK_PRINT Serial
+#include <ESP8266WiFi.h>
+#include <BlynkSimpleEsp8266.h>
+#include <DHT.h>
+
+//toke Blynk
+char auth[] = "JwzOmS-Rmczj7XxLaDLM-4e9qv_xiGLp";
+
+//WiFI
+char ssid[] = "Hidden-Network";
+char pass[] = "1234567890";
+
+#define DHTTYPE DHT22
+uint8_t pinDHT = D2;
+
+#define DHTTYPE DHT22
+DHT dht(pinDHT, DHTTYPE);
+BlynkTimer timer;
+
+void sendSensor()
+{
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+
+  if (isnan(h) || isnan(t)){
+    Serial.println("Failed to read from DHT Sensor!");
+    return;
+  }
+  Blynk.virtualWrite(V5, h);
+  Blynk.virtualWrite(V6, t);
+}
+
+void setup()
+{
+  //Debug Console
+  Serial.begin(9600);
+
+  Blynk.begin(auth, ssid, pass);
+
+  dht.begin();
+  timer.setInterval(1000L, sendSensor);
+}
+
+void loop()
+{
+  Blynk.run();
+  timer.run();
+}
